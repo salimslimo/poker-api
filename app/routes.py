@@ -9,6 +9,13 @@ app = Flask(__name__)
 # Dictionnaire pour stocker les parties avec l'ID comme clé
 games = {}
 
+@app.errorhandler(400)
+@app.errorhandler(404)
+def custom_error_handler(error):
+    response = jsonify({"error": error.description})
+    response.status_code = error.code
+    return response
+
 def get_game(game_id):
     """Récupère une partie à partir de son ID ou renvoie une erreur 404 si elle n'existe pas."""
     game = games.get(game_id)
