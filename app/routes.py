@@ -67,38 +67,10 @@ def deal_river(game_id):
     game.burn_and_deal_river()
     return jsonify(game.get_game_state())
 
-@app.route('/<game_id>/reset', methods=['POST'])
-def reset_game(game_id):
-    """Réinitialise une partie spécifique."""
-    game = get_game(game_id)
-    
-    # Crée une nouvelle partie avec le même ID
-    new_game = PokerGameService()
-    new_game.id = game_id  # Conserve le même ID
-    games[game_id] = new_game  # Remplace l'ancienne partie
-    
-    return jsonify({
-        'message': 'La partie a été réinitialisée.',
-        'game_state': new_game.get_game_state()
-    })
-
 @app.route('/<game_id>/state', methods=['GET'])
 def game_state(game_id):
     game = get_game(game_id)
     return jsonify(game.get_game_state())
-
-@app.route('/<game_id>', methods=['DELETE'])
-def delete_game(game_id):
-    """Supprime une partie en fonction de son ID."""
-    game = games.get(game_id)
-    
-    if not game:
-        return jsonify({'message': 'Partie non trouvée.'}), 404
-    
-    # Supprime la partie du dictionnaire
-    del games[game_id]
-    
-    return jsonify({'message': f'Partie {game_id} supprimée avec succès.'}), 200
 
 @app.route('/games', methods=['GET'])
 def list_games():
@@ -118,12 +90,3 @@ def list_games():
     ]
     
     return jsonify({'number_of_games': len(games), 'games': active_games}), 200
-
-@app.route('/games', methods=['DELETE'])
-def delete_all_games():
-    """Supprime toutes les parties en cours."""
-    if not games:
-        return jsonify({'message': 'Aucune partie en cours à supprimer.'}), 200
-
-    games.clear()  # Supprime toutes les parties en vidant le dictionnaire.
-    return jsonify({'message': 'Toutes les parties ont été supprimées.'}), 200
