@@ -5,7 +5,7 @@ CARD_VALUES = {
     11: 'J', 12: 'Q', 13: 'K', 14: 'A'
 }
 
-CARD_SUITS = ['♠', '♥', '♦', '♣']
+CARD_SUITS = {'♠', '♥', '♦', '♣'}
 
 class Card:
     def __init__(self, value, suit):
