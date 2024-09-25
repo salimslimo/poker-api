@@ -3,8 +3,12 @@
 from flask import Flask, jsonify, request, abort
 from app.services import PokerGameService
 import uuid
+import re
 
 app = Flask(__name__)
+
+# Regex pour valider le format UUID
+UUID_REGEX = re.compile(r'^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$')
 
 # Dictionnaire pour stocker les parties avec l'ID comme clé
 games = {}
@@ -16,7 +20,12 @@ def custom_error_handler(error):
     response.status_code = error.code
     return response
 
+def validate_uuid(game_id):
+    if not UUID_REGEX.match(game_id):
+        abort(400, description="game_id invalide. Le format doit être un UUID v4.")
+
 def get_game(game_id):
+    validate_uuid(game_id)
     """Récupère une partie à partir de son ID ou renvoie une erreur 404 si elle n'existe pas."""
     game = games.get(game_id)
     if not game:
@@ -40,6 +49,7 @@ def start_game():
 
 @app.route('/<game_id>/flop', methods=['POST'])
 def deal_flop(game_id):
+    validate_uuid(game_id)
     game = get_game(game_id)
     
     if not game.player_1_hand or not game.player_2_hand:
@@ -52,6 +62,7 @@ def deal_flop(game_id):
 
 @app.route('/<game_id>/turn', methods=['POST'])
 def deal_turn(game_id):
+    validate_uuid(game_id)
     game = get_game(game_id)
     
     if len(game.community_cards) < 3:
@@ -64,6 +75,7 @@ def deal_turn(game_id):
 
 @app.route('/<game_id>/river', methods=['POST'])
 def deal_river(game_id):
+    validate_uuid(game_id)
     game = get_game(game_id)
     
     if len(game.community_cards) < 4:
@@ -76,6 +88,7 @@ def deal_river(game_id):
 
 @app.route('/<game_id>/state', methods=['GET'])
 def game_state(game_id):
+    validate_uuid(game_id)
     game = get_game(game_id)
     return jsonify(game.get_game_state())
 
