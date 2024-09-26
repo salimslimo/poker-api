@@ -78,6 +78,8 @@ def deal_river(game_id):
     validate_uuid(game_id)
     game = get_game(game_id)
     
+    if len(game.community_cards) < 3:
+        abort(400, description="Le flop n'a pas encore été distribué. Passez d'abord au flop.")
     if len(game.community_cards) < 4:
         abort(400, description="Le turn n'a pas encore été distribué. Passez d'abord au turn.")
     if len(game.community_cards) >= 5:
