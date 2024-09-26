@@ -7,6 +7,29 @@ CARD_VALUES = {
 
 CARD_SUITS = {'♠', '♥', '♦', '♣'}
 
+SUIT_MAPPING = {
+    '♠': 's',
+    '♥': 'h',
+    '♦': 'd',
+    '♣': 'c'
+}
+
+VALUE_MAPPING = {
+    '2': '2',
+    '3': '3',
+    '4': '4',
+    '5': '5',
+    '6': '6',
+    '7': '7',
+    '8': '8',
+    '9': '9',
+    '10': 'T',
+    'J': 'J',
+    'Q': 'Q',
+    'K': 'K',
+    'A': 'A'
+}
+
 class Card:
     def __init__(self, value, suit):
         if value not in CARD_VALUES:
@@ -18,6 +41,9 @@ class Card:
     
     def __str__(self):
         return f'{CARD_VALUES[self.value]}{self.suit}'
+
+    def to_phevaluate_format(self):
+        return f'{VALUE_MAPPING[CARD_VALUES[self.value]]}{SUIT_MAPPING[self.suit]}'
 
 
 class Deck:
