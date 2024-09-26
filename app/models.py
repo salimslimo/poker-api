@@ -60,6 +60,8 @@ class Deck:
         self.burned_cards.append(burned_card)
 
     def deal(self, number_of_cards):
+        if number_of_cards > len(self.cards):
+            raise ValueError("Il ne reste pas assez de cartes dans le paquet.")
         return [self.cards.pop(0) for _ in range(number_of_cards)]
 
     def remaining_cards(self):
