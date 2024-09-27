@@ -4,6 +4,7 @@ from flask import Flask, jsonify, request, abort
 from app.services import PokerGameService
 import uuid
 import re
+from typing import List, Dict
 
 
 app = Flask(__name__)
@@ -12,20 +13,20 @@ app = Flask(__name__)
 UUID_REGEX = re.compile(r'^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$')
 
 # Dictionnaire pour stocker les parties avec l'ID comme clé
-games = {}
+games: Dict[str, PokerGameService] = {}
 
 @app.errorhandler(400)
 @app.errorhandler(404)
-def custom_error_handler(error):
+def custom_error_handler(error) -> Dict[str, str]:
     response = jsonify({"error": error.description})
     response.status_code = error.code
     return response
 
-def validate_uuid(game_id):
+def validate_uuid(game_id: str) -> None:
     if not UUID_REGEX.match(game_id):
         abort(400, description="game_id invalide. Le format doit être un UUID v4.")
 
-def get_game(game_id):
+def get_game(game_id: str) -> PokerGameService:
     validate_uuid(game_id)
     """Récupère une partie à partir de son ID ou renvoie une erreur 404 si elle n'existe pas."""
     game = games.get(game_id)
@@ -49,10 +50,10 @@ def start_game():
     })
 
 @app.route('/<game_id>/flop', methods=['POST'])
-def deal_flop(game_id):
+def deal_flop(game_id: str):
     validate_uuid(game_id)
     game = get_game(game_id)
-    
+
     if not game.player_1_hand or not game.player_2_hand:
         abort(400, description="Les mains n'ont pas encore été distribuées. Commencez par distribuer les mains.")
     if len(game.community_cards) >= 3:
@@ -62,7 +63,7 @@ def deal_flop(game_id):
     return jsonify(game.get_game_state())
 
 @app.route('/<game_id>/turn', methods=['POST'])
-def deal_turn(game_id):
+def deal_turn(game_id: str):
     validate_uuid(game_id)
     game = get_game(game_id)
     
@@ -75,7 +76,7 @@ def deal_turn(game_id):
     return jsonify(game.get_game_state())
 
 @app.route('/<game_id>/river', methods=['POST'])
-def deal_river(game_id):
+def deal_river(game_id: str):
     validate_uuid(game_id)
     game = get_game(game_id)
     
@@ -90,7 +91,7 @@ def deal_river(game_id):
     return jsonify(game.get_game_state())
 
 @app.route('/<game_id>/state', methods=['GET'])
-def game_state(game_id):
+def game_state(game_id: str):
     validate_uuid(game_id)
     game = get_game(game_id)
     return jsonify(game.get_game_state())
@@ -115,7 +116,7 @@ def list_games():
     return jsonify({'number_of_games': len(games), 'games': active_games}), 200
 
 @app.route('/<game_id>/evaluate', methods=['GET'])
-def evaluate(game_id):
+def evaluate(game_id: str):
     validate_uuid(game_id)
     game = get_game(game_id)
     return jsonify(game.evaluate()), 200
