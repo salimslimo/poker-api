@@ -24,14 +24,14 @@ def custom_error_handler(error) -> Dict[str, str]:
 
 def validate_uuid(game_id: str) -> None:
     if not UUID_REGEX.match(game_id):
-        abort(400, description="game_id invalide. Le format doit être un UUID v4.")
+        abort(400, description="Invalid game_id. Format must be a UUID v4.")
 
 def get_game(game_id: str) -> PokerGameService:
     validate_uuid(game_id)
     """Récupère une partie à partir de son ID ou renvoie une erreur 404 si elle n'existe pas."""
     game = games.get(game_id)
     if not game:
-        abort(404, description="La partie n'existe pas.")
+        abort(404, description="The game does not exist.")
     return game
 
 @app.route('/start', methods=['POST'])
@@ -47,14 +47,10 @@ def start_game():
         'game_state': game.get_game_state()
     })
 
-@app.route('/<game_id>/deal', methods=['POST'])
-def deal(game_id: str):
+@app.route('/<game_id>/hands', methods=['POST'])
+def deal_hands(game_id: str):
     validate_uuid(game_id)
     game = get_game(game_id)
-    
-    if game.player_hands_dealt:
-        abort(400, description="Les mains ont déjà été distribuées.")
-    # Distribue les mains aux deux joueurs
     game.deal_hands()
 
     return jsonify({
@@ -67,12 +63,6 @@ def deal(game_id: str):
 def deal_flop(game_id: str):
     validate_uuid(game_id)
     game = get_game(game_id)
-
-    if any(len(hand) == 0 for hand in game.hands):
-        abort(400, description="Les mains n'ont pas encore été distribuées. Commencez par distribuer les mains.")
-    if len(game.community_cards) >= 3:
-        abort(400, description="Le flop a déjà été distribué.")
-    
     game.burn_and_deal_flop()
     return jsonify(game.get_game_state())
 
@@ -80,27 +70,13 @@ def deal_flop(game_id: str):
 def deal_turn(game_id: str):
     validate_uuid(game_id)
     game = get_game(game_id)
-    
-    if len(game.community_cards) < 3:
-        abort(400, description="Le flop n'a pas encore été distribué. Passez d'abord au flop.")
-    if len(game.community_cards) >= 4:
-        abort(400, description="Le turn a déjà été distribué.")
-    
     game.burn_and_deal_turn()
     return jsonify(game.get_game_state())
 
 @app.route('/<game_id>/river', methods=['POST'])
 def deal_river(game_id: str):
     validate_uuid(game_id)
-    game = get_game(game_id)
-    
-    if len(game.community_cards) < 3:
-        abort(400, description="Le flop n'a pas encore été distribué. Passez d'abord au flop.")
-    if len(game.community_cards) < 4:
-        abort(400, description="Le turn n'a pas encore été distribué. Passez d'abord au turn.")
-    if len(game.community_cards) >= 5:
-        abort(400, description="La river a déjà été distribuée.")
-    
+    game = get_game(game_id)    
     game.burn_and_deal_river()
     return jsonify(game.get_game_state())
 

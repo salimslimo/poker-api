@@ -1,4 +1,5 @@
 # poker/app/models.py
+import random
 from typing import List, Dict
 
 CARD_VALUES: Dict[int, str] = {
@@ -6,7 +7,7 @@ CARD_VALUES: Dict[int, str] = {
     11: 'J', 12: 'Q', 13: 'K', 14: 'A'
 }
 
-CARD_SUITS: set[str] = {'♠', '♥', '♦', '♣'}
+CARD_SUITS: set = {'♠', '♥', '♦', '♣'}
 
 SUIT_MAPPING: Dict[str, str] = {
     '♠': 's',
@@ -34,9 +35,9 @@ VALUE_MAPPING: Dict[str, str] = {
 class Card:
     def __init__(self, value: int, suit: str) -> None:
         if value not in CARD_VALUES:
-            raise ValueError(f"Invalid card value: {value}")
+            raise ValueError(f"Invalid card value: {value} during card creation.")
         if suit not in CARD_SUITS:
-            raise ValueError(f"Invalid card suit: {suit}")
+            raise ValueError(f"Invalid card suit: {suit} during card creation.")
         self.value: int = value
         self.suit: str = suit
     
@@ -49,11 +50,13 @@ class Card:
 
 class Deck:
     def __init__(self) -> None:
-        self.cards: List[Card] = [Card(value, suit) for value in CARD_VALUES for suit in CARD_SUITS]
+        self.cards: List[Card] = self._generate_deck()
         self.burned_cards: List[Card] = []
 
+    def _generate_deck(self) -> List[Card]:
+        return [Card(value, suit) for value in CARD_VALUES for suit in CARD_SUITS]
+
     def shuffle(self) -> None:
-        import random
         random.shuffle(self.cards)
 
     def burn_card(self) -> None:
