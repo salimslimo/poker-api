@@ -41,6 +41,19 @@ def start_game():
     game = PokerGameService(num_players=num_players)
     games[game.id] = game  # Stocke la partie avec son ID
 
+    return jsonify({
+        'message': 'Partie démarrée avec succès.',
+        'game_id': game.id,
+        'game_state': game.get_game_state()
+    })
+
+@app.route('/<game_id>/deal', methods=['POST'])
+def deal(game_id: str):
+    validate_uuid(game_id)
+    game = get_game(game_id)
+    
+    if game.player_hands_dealt:
+        abort(400, description="Les mains ont déjà été distribuées.")
     # Distribue les mains aux deux joueurs
     game.deal_hands()
 
@@ -106,7 +119,7 @@ def list_games():
     active_games = [
         {
             'game_id': game_id,
-            'player_hands': [[str(card) for card in hand] for hand in game.hands],
+            'player_hands': {player: [str(card) for card in hand] for player, hand in game.hands.items()},
             'community_cards': [str(card) for card in game.community_cards],
             'remaining_cards': game.deck.remaining_cards()
         }
