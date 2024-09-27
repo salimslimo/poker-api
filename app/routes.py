@@ -4,7 +4,7 @@ from flask import Flask, jsonify, request, abort
 from app.services import PokerGameService
 import uuid
 import re
-from phevaluator.evaluator import evaluate_cards
+
 
 app = Flask(__name__)
 
@@ -118,27 +118,4 @@ def list_games():
 def evaluate(game_id):
     validate_uuid(game_id)
     game = get_game(game_id)
-
-    player_1_hand_to_evaluate = [str(card.to_phevaluate_format()) for card in game.community_cards] + [str(card.to_phevaluate_format()) for card in game.player_1_hand]
-    player_2_hand_to_evaluate = [str(card.to_phevaluate_format()) for card in game.community_cards] + [str(card.to_phevaluate_format()) for card in game.player_2_hand]
-
-    score_player_1 = evaluate_cards(*player_1_hand_to_evaluate)
-    score_player_2 = evaluate_cards(*player_2_hand_to_evaluate)
-
-    if score_player_1 < score_player_2:
-        winner = 'Player 1'
-    elif score_player_1 > score_player_2:
-        winner = 'Player 2'
-    else:
-        winner = "Egalité"
-
-    evaluation_result = {
-        'game_id': game_id,
-        'player_1_hand': [str(card) for card in game.player_1_hand],
-        'player_2_hand': [str(card) for card in game.player_2_hand],
-        'community_cards': [str(card) for card in game.community_cards],
-        "score_player_1": score_player_1,
-        "score_player_2": score_player_2,
-        "winner" : winner
-    }
-    return jsonify(evaluation_result), 200
+    return jsonify(game.evaluate()), 200
