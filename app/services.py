@@ -64,6 +64,7 @@ class PokerGameService:
 
         for player, hand in self.hands.items():
             hand_to_evaluate: List[str] = [str(card.to_phevaluate_format()) for card in self.community_cards + hand]
+
             score_value = evaluate_cards(*hand_to_evaluate)
             if score_value > 6185:
                 hand_value = "High card"
@@ -90,7 +91,6 @@ class PokerGameService:
 
         max_score = min([score['score'] for score in scores.values()])
         winners = [player for player, score in scores.items() if score['score'] == max_score]
-
         return {
             'game_id': self.id,
             'hands': {player: [str(card) for card in hand] for player, hand in self.hands.items()},
