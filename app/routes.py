@@ -37,7 +37,8 @@ def get_game(game_id: str) -> PokerGameService:
 @app.route('/start', methods=['POST'])
 def start_game():
     # Génère une nouvelle partie
-    game = PokerGameService()
+    num_players = request.json.get('num_players', 2)
+    game = PokerGameService(num_players=num_players)
     games[game.id] = game  # Stocke la partie avec son ID
 
     # Distribue les mains aux deux joueurs
@@ -54,7 +55,7 @@ def deal_flop(game_id: str):
     validate_uuid(game_id)
     game = get_game(game_id)
 
-    if not game.player_1_hand or not game.player_2_hand:
+    if any(len(hand) == 0 for hand in game.hands):
         abort(400, description="Les mains n'ont pas encore été distribuées. Commencez par distribuer les mains.")
     if len(game.community_cards) >= 3:
         abort(400, description="Le flop a déjà été distribué.")
@@ -105,8 +106,7 @@ def list_games():
     active_games = [
         {
             'game_id': game_id,
-            'player_1_hand': [str(card) for card in game.player_1_hand],
-            'player_2_hand': [str(card) for card in game.player_2_hand],
+            'player_hands': [[str(card) for card in hand] for hand in game.hands],
             'community_cards': [str(card) for card in game.community_cards],
             'remaining_cards': game.deck.remaining_cards()
         }
