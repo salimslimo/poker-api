@@ -92,17 +92,24 @@ def list_games():
     if not games:
         return jsonify({'message': 'Aucune partie en cours.', 'number_of_games': 0}), 200
 
-    active_games = [
-        {
+    active_games = []
+
+    for game_id, game in games.items():
+        game_state = {
             'game_id': game_id,
             'player_hands': {player: [str(card) for card in hand] for player, hand in game.hands.items()},
             'community_cards': [str(card) for card in game.community_cards],
             'remaining_cards': game.deck.remaining_cards()
         }
-        for game_id, game in games.items()
-    ]
-    
-    return jsonify({'number_of_games': len(games), 'games': active_games}), 200
+
+        if game.player_hands_dealt and game.community_cards:
+            evaluation = game.evaluate()
+            game_state['scores'] = evaluation.get('scores', {})
+            game_state['winners'] = evaluation.get('winner(s)', [])
+
+        active_games.append(game_state)
+
+    return jsonify({'number_of_games': len(active_games), 'games': active_games}), 200
 
 @app.route('/<game_id>/evaluate', methods=['GET'])
 def evaluate(game_id: str):
