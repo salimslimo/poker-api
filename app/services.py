@@ -64,10 +64,32 @@ class PokerGameService:
 
         for player, hand in self.hands.items():
             hand_to_evaluate: List[str] = [str(card.to_phevaluate_format()) for card in self.community_cards + hand]
-            scores[player] = evaluate_cards(*hand_to_evaluate)
+            score_value = evaluate_cards(*hand_to_evaluate)
+            if score_value > 6185:
+                hand_value = "High card"
+            elif score_value > 3325:
+                hand_value = "One pair"
+            elif score_value > 2467:
+                hand_value = "Two pair"
+            elif score_value > 1609:
+                hand_value = "Three of a kind"
+            elif score_value > 1599:
+                hand_value = "Straight"
+            elif score_value > 322:
+                hand_value = "Flush"
+            elif score_value > 166:
+                hand_value = "Full house"
+            elif score_value > 10:
+                hand_value = "Four of a kind"
+            else:
+                hand_value = "Straight flush"
+            scores[player] = {
+                'score': score_value,
+                'hand_value': hand_value
+            }
 
-        max_score = min(scores.values())
-        winners = [player for player, score in scores.items() if score == max_score]
+        max_score = min([score['score'] for score in scores.values()])
+        winners = [player for player, score in scores.items() if score['score'] == max_score]
 
         return {
             'game_id': self.id,
