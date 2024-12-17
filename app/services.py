@@ -13,7 +13,7 @@ class PokerGameService:
         self.deck: Deck = Deck()
         self.deck.shuffle()
         if num_players < 2:
-            abort(404, description="A poker game must have at least 2 players.")
+            abort(400, description="A poker game must have at least 2 players.")
         self.num_players: int = num_players
         self.hands: Dict[str, List[Card]] = {}
         self.community_cards: List[Card] = []
@@ -21,34 +21,34 @@ class PokerGameService:
 
     def deal_hands(self) -> None:
         if self.player_hands_dealt:
-            abort(404, description="The hands have already been dealt.")
+            abort(400, description="The hands have already been dealt.")
         for i in range(1, self.num_players + 1):
             self.hands[f'player_{i}'] = self.deck.deal(2)
         self.player_hands_dealt = True
 
     def burn_and_deal_flop(self) -> None:
         if not self.player_hands_dealt:
-            abort(404, description="Hands have not been dealt yet. Deal hands first.")
+            abort(400, description="Hands have not been dealt yet. Deal hands first.")
         if len(self.community_cards) >= 3:
-            abort(404, description="The flop has already been distributed.")
+            abort(400, description="The flop has already been distributed.")
         self.deck.burn_card()
         self.community_cards.extend(self.deck.deal(3))
 
     def burn_and_deal_turn(self) -> None:
         if len(self.community_cards) < 3:
-            abort(404, description="The flop has not been dealt yet. Proceed to the flop first.")
+            abort(400, description="The flop has not been dealt yet. Proceed to the flop first.")
         if len(self.community_cards) >= 4:
-            abort(404, description="The turn has already been dealt.")
+            abort(400, description="The turn has already been dealt.")
         self.deck.burn_card()
         self.community_cards.extend(self.deck.deal(1))
 
     def burn_and_deal_river(self) -> None:
         if len(self.community_cards) < 3:
-            abort(404, description="The flop has not been dealt yet. Proceed to the flop first.")
+            abort(400, description="The flop has not been dealt yet. Proceed to the flop first.")
         if len(self.community_cards) < 4:
-            abort(404, description="The turn has not yet been dealt. Pass to the turn first.")
+            abort(400, description="The turn has not yet been dealt. Pass to the turn first.")
         if len(self.community_cards) >= 5:
-            abort(404, description="The river has already been dealt.")
+            abort(400, description="The river has already been dealt.")
         self.deck.burn_card()
         self.community_cards.extend(self.deck.deal(1))
 
